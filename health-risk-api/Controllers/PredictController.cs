@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace HealthRiskApi.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("predict")]
     public class PredictController : ControllerBase
     {
         public class HealthInput
@@ -13,6 +13,9 @@ namespace HealthRiskApi.Controllers
             public double Cholesterol { get; set; }
             public double Glucose { get; set; }
             public double BMI { get; set; }
+            public double Systolic { get; set; }
+            public double Diastolic { get; set; }
+            public double SpO2 { get; set; }
             public string Condition { get; set; }
         }
 
@@ -25,13 +28,22 @@ namespace HealthRiskApi.Controllers
         public ActionResult<PredictionResult> Post([FromBody] HealthInput input)
         {
             double risk = 0;
-            if (input.Condition.ToLower() == "heart")
+            switch (input.Condition.ToLower())
             {
-                risk = (input.Age * 0.3 + input.Cholesterol * 0.2 + input.BMI * 0.5);
-            }
-            else
-            {
-                risk = (input.Age * 0.25 + input.Glucose * 0.4 + input.BMI * 0.4);
+                case "heart":
+                    risk = input.Age * 0.25 + input.Cholesterol * 0.2 + input.BMI * 0.4;
+                    break;
+                case "diabetes":
+                    risk = input.Glucose * 0.35 + input.BMI * 0.35 + input.Age * 0.2;
+                    break;
+                case "apnea":
+                    risk = input.BMI * 0.6 + (100 - input.SpO2) * 1.2;
+                    break;
+                case "hypertension":
+                    risk = input.Systolic * 0.25 + input.Diastolic * 0.25 + input.BMI * 0.25;
+                    break;
+                default:
+                    return BadRequest("Unknown condition");
             }
 
             risk = Math.Min(100, Math.Round(risk, 2));

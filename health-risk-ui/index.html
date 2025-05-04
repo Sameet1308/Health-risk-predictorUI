@@ -2,132 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Health Dashboard</title>
+  <title>Health Risk Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://unpkg.com/medplum@latest/dist/medplum.bundle.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      background: #f5f8fa;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       padding: 20px;
     }
-    .dashboard {
+    .container {
       background: #fff;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      padding: 30px 40px;
+      max-width: 1000px;
       width: 100%;
-      max-width: 700px;
-    }
-    .dashboard h1 {
       text-align: center;
-      margin-bottom: 30px;
-      color: #00796b;
     }
-    .risk-grid {
-      display: flex;
-      justify-content: space-between;
+    h1 {
+      font-size: 24px;
+      margin-bottom: 30px;
+      color: #222;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
-      flex-wrap: wrap;
+      justify-items: stretch;
+
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      justify-items: center;
     }
     .card {
-      flex: 1 1 45%;
-      background: #f9f9f9;
-      border-left: 5px solid #00796b;
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 230px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 15px;
       padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
-    .card h2 {
-      margin-bottom: 10px;
-    }
-    .risk-percent {
-      font-size: 28px;
-      font-weight: bold;
-    }
-    .heart { border-color: #e53935; }
-    .diabetes { border-color: #1e88e5; }
-    .timestamp {
-      margin-top: 25px;
-      text-align: center;
-      font-size: 14px;
-      color: #555;
-    }
-    button {
-      margin: 20px auto;
-      display: block;
-      padding: 12px 25px;
-      font-size: 16px;
-      background-color: #00796b;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+    .card.heart { border-color: #f44336; }
+    .card.diabetes { border-color: #2196f3; }
+    .card.apnea { border-color: #7e57c2; }
+    .card.hyper { border-color: #fb8c00; }
+    .icon { font-size: 36px; margin-bottom: 10px; }
+    .risk-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+    .risk-value { font-size: 32px; font-weight: 700; margin-bottom: 20px; }
+    .heart .icon, .heart .risk-value, .heart .dot { color: #f44336; }
+    .diabetes .icon, .diabetes .risk-value, .diabetes .dot { color: #2196f3; }
+    .apnea .icon, .apnea .risk-value, .apnea .dot { color: #7e57c2; }
+    .hyper .icon, .hyper .risk-value, .hyper .dot { color: #fb8c00; }
+    .metric { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+    .metric .dot { font-size: 16px; }
+    .timestamp { margin-top: 25px; font-size: 13px; color: #666; }
   </style>
 </head>
 <body>
-  <div class="dashboard">
-    <h1>Your Health Risk Dashboard</h1>
-    <button onclick="loginAndPredict()">Login with Medplum & Get Risk</button>
-    <div class="risk-grid">
+  <div class="container">
+    <h1>Health Risk Dashboard</h1>
+    <div class="cards">
       <div class="card heart">
-        <h2>Heart Disease Risk</h2>
-        <div class="risk-percent" id="heartRisk">--%</div>
+        <div class="icon">❤️</div>
+        <div class="risk-title">Heart Disease Risk</div>
+        <div class="risk-value" id="heartRisk">--%</div>
+        <div class="metric"><span class="dot">• Cholesterol</span><span id="heartChol">--</span></div>
+        <div class="metric"><span class="dot">• Glucose</span><span id="heartGlu">--</span></div>
+        <div class="metric"><span class="dot">• BMI</span><span id="heartBmi">--</span></div>
       </div>
       <div class="card diabetes">
-        <h2>Diabetes Risk</h2>
-        <div class="risk-percent" id="diabetesRisk">--%</div>
+        <div class="icon">💧</div>
+        <div class="risk-title">Diabetes Risk</div>
+        <div class="risk-value" id="diabetesRisk">--%</div>
+        <div class="metric"><span class="dot">• Cholesterol</span><span id="diaChol">--</span></div>
+        <div class="metric"><span class="dot">• Glucose</span><span id="diaGlu">--</span></div>
+        <div class="metric"><span class="dot">• BMI</span><span id="diaBmi">--</span></div>
+      </div>
+      <div class="card apnea">
+        <div class="icon">😴</div>
+        <div class="risk-title">Sleep Apnea Risk</div>
+        <div class="risk-value" id="apneaRisk">--%</div>
+        <div class="metric"><span class="dot">• SpO₂</span><span id="apneaOxy">--%</span></div>
+        <div class="metric"><span class="dot">• BMI</span><span id="apneaBmi">--</span></div>
+      </div>
+      <div class="card hyper">
+        <div class="icon">🧠</div>
+        <div class="risk-title">Hypertension Risk</div>
+        <div class="risk-value" id="hyperRisk">--%</div>
+        <div class="metric"><span class="dot">• Systolic</span><span id="hyperSys">--</span></div>
+        <div class="metric"><span class="dot">• Diastolic</span><span id="hyperDia">--</span></div>
+        <div class="metric"><span class="dot">• BMI</span><span id="hyperBmi">--</span></div>
       </div>
     </div>
     <div class="timestamp" id="lastUpdated">Last updated: --</div>
   </div>
   <script>
-    const medplum = new Medplum.MedplumClient({
-      clientId: 'your-client-id',
-      redirectUri: window.location.href
-    });
-    async function loginAndPredict() {
-      await medplum.signInWithPopup();
-      const me = await medplum.get('Patient/$me');
-      const patientId = me.id;
-      const obs = await medplum.search('Observation', {
-        subject: `Patient/${patientId}`,
-        _sort: '-date',
-        _count: 10
-      });
-      let cholesterol = 180, glucose = 95, bmi = 24.5;
-      for (let o of obs.entry || []) {
-        const code = o.resource.code?.coding?.[0]?.code;
-        const val = o.resource.valueQuantity?.value;
-        if (code === '2093-3') cholesterol = val;
-        if (code === '2339-0') glucose = val;
-        if (code === '39156-5') bmi = val;
-      }
-      const age = me.birthDate ? new Date().getFullYear() - new Date(me.birthDate).getFullYear() : 40;
-      const [heartRes, diabetesRes] = await Promise.all([
-        fetch("https://your-dotnet-api.com/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ age, gender: me.gender, cholesterol, glucose, bmi, condition: "heart" })
-        }).then(r => r.json()),
-        fetch("https://your-dotnet-api.com/predict", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ age, gender: me.gender, cholesterol, glucose, bmi, condition: "diabetes" })
-        }).then(r => r.json())
-      ]);
-      document.getElementById("heartRisk").innerText = `${heartRes.risk_percentage}%`;
-      document.getElementById("diabetesRisk").innerText = `${diabetesRes.risk_percentage}%`;
-      document.getElementById("lastUpdated").innerText = "Last updated: " + new Date().toLocaleString();
-    }
+    document.getElementById("lastUpdated").innerText = "Last updated: " + new Date().toLocaleString();
   </script>
 </body>
 </html>
